@@ -18,7 +18,7 @@ class PHQ9QuestionList(APIView):
 class PHQResponseCreate(APIView):
     def post(self, request):
         # Get the user from the request
-        user = request.user
+        user = request.data.get('user')
 
         # Check if there are any previous responses for the user
         previous_responses = PHQResponse.objects.filter(user=user)
