@@ -30,14 +30,20 @@ class LoginAPI(KnoxLoginView):
         serializer = AuthTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        first_name = user.first_name.capitalize()
+        last_name = user.last_name.capitalize()
+        last_login=user.last_login
+        full_name = first_name +  ' ' + last_name
         login(request, user)
         token = AuthToken.objects.filter(user=user).first()
 
         # Customize the response data
         response_data = {
-            'expiry': token.expiry,
-            'token': token.token_key,
-            'user_id': user.id  # Include the user ID in the response
+            # 'expiry': token.expiry,
+            'token': token.digest,
+            'user_id': user.id, # Include the user ID in the response
+            'full_name': full_name,
+            'last_login':last_login,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
