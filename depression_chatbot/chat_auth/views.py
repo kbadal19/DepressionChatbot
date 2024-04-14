@@ -7,7 +7,8 @@ from django.contrib.auth import login
 from rest_framework import permissions
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from knox.views import LoginView as KnoxLoginView
-from rest_framework import status
+
+
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -22,7 +23,6 @@ class RegisterAPI(generics.GenericAPIView):
         })
       
         
-
 class LoginAPI(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
     
@@ -30,21 +30,9 @@ class LoginAPI(KnoxLoginView):
         serializer = AuthTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        first_name = user.first_name.capitalize()
-        last_name = user.last_name.capitalize()
-        last_login=user.last_login
-        full_name = first_name +  ' ' + last_name
-        login(request, user)
-        token = AuthToken.objects.filter(user=user).first()
-
-        # Customize the response data
-        response_data = {
-            # 'expiry': token.expiry,
-            'token': token.digest,
-            'user_id': user.id, # Include the user ID in the response
-            'full_name': full_name,
-            'last_login':last_login,
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
-
+        # login(request, user)
+        # return super(LoginAPI, self).post(request, format=None)
+        return Response({
+            "user": UserSerializer(user).data,
+            "token": AuthToken.objects.create(user)[1]
+        })
