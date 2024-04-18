@@ -15,28 +15,43 @@ class PHQ9QuestionList(APIView):
         return Response(serializer.data)
 
 
+from django.shortcuts import get_object_or_404
+from django.db.models import Max
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import PHQResponse
+from django.contrib.auth.models import User
+
 class PHQResponseCreate(APIView):
     def post(self, request):
-        # Get the user from the request
-        user = request.data.get('user')
+        # Get the user ID from the request data
+        user_id = request.data.get('user')
 
-        # Check if there are any previous responses for the user
-        previous_responses = PHQResponse.objects.filter(user=user)
-        
-        if previous_responses.exists():
-            # If previous responses exist, get the maximum batch number and increment it by 1
-            max_batch = previous_responses.aggregate(Max('batch'))['batch__max']
-            batch_number = max_batch + 1
-        else:
-            # If no previous responses exist, set the batch number to 1
-            batch_number = 1
+        # Retrieve the user instance
+        user = get_object_or_404(User, pk=user_id)
 
-        # Add the batch number to the request data
-        request.data['batch'] = batch_number
+        # Get the maximum batch number for the user's previous responses
+        max_batch = PHQResponse.objects.filter(user=user).aggregate(Max('batch'))['batch__max']
 
-        # Serialize and save the response
-        serializer = PHQResponseSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Calculate the batch number
+        batch_number = max_batch + 1 if max_batch is not None else 1
+
+        # Iterate over each response in the payload
+        for response_data in request.data.get('responses', []):
+            # Get question ID and response text from the payload
+            question_id = response_data.get('question_id')
+            response_text = response_data.get('response_text')
+
+            # Retrieve the question instance
+            question = get_object_or_404(PHQ9Question, pk=question_id)
+
+            # Create the PHQResponse instance
+            PHQResponse.objects.create(
+                user=user,
+                question=question,
+                response_text=response_text,
+                batch=batch_number
+            )
+
+        return Response({"message": "Responses created successfully"}, status=status.HTTP_201_CREATED)
