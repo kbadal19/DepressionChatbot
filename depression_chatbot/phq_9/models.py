@@ -18,9 +18,14 @@ class PHQResponse(models.Model):
     response_text = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
     batch = models.IntegerField(default=1) 
-    
+    sentiment_score = models.FloatField(default=0.0) 
 
     def __str__(self):
         return f"{self.user.username}'s response to '{self.question.question_text}'"
 
 
+# class PHQResponseResult(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     result = models.IntegerField()
+#     timestamp = models.DateTimeField(auto_now_add=True)
