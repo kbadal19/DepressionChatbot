@@ -69,6 +69,31 @@ class PHQResponseCreate(APIView):
 
         return Response({"message": "Responses created successfully"}, status=status.HTTP_201_CREATED)
 
+class PHQScore(APIView):
+    def get(self, request, user_id):
+        # Retrieve the user instance
+        user = get_object_or_404(User, pk=user_id)
+
+        # Call the get_score method
+        score = self.get_score(user)
+
+        return Response({"score": score}, status=status.HTTP_200_OK)
+
+    def get_score(self, user):
+        # Get the latest batch number for the user's responses
+        latest_batch = PHQResponse.objects.filter(user=user).aggregate(Max('batch'))['batch__max']
+
+        if latest_batch is not None:
+            # Retrieve all responses of the latest batch
+            latest_responses = PHQResponse.objects.filter(user=user, batch=latest_batch)
+
+            # Calculate the sum of sentiment scores from the latest responses
+            total_sentiment_score = sum(response.sentiment_score for response in latest_responses)
+
+            return total_sentiment_score
+        else:
+            return 0
+
 
 # import pandas as pd
 # import numpy as np
