@@ -60,7 +60,6 @@ class PHQResponseCreate(APIView):
                 user=user,
                 question=question,
                 response_text=response_text,
-                predicted_emotion=predicted_emotion,
                 sentiment_score=sentiment_score,
                 batch=batch_number
             )
@@ -80,14 +79,14 @@ def rate_emotion(depressive_index):
 def get_depressive_index(emotion):
     # Define depressive index for each emotion
     depressive_index_mapping = {
-        'Anger': 0.47,
-        'Anticipation': -0.43,
-        'Disgust': 0.17,
-        'Fear': 0.45,
-        'Joy': -0.56,
-        'Sadness': 0.32,
-        'Surprise': -0.28,
-        'Trust': -0.19
+        'anger': 0.47,
+        'anticipation': -0.43,
+        'disgust': 0.17,
+        'fear': 0.45,
+        'joy': -0.56,
+        'sadness': 0.32,
+        'surprise': -0.28,
+        'trust': -0.19
     }
     return depressive_index_mapping.get(emotion, 0)  # Default to 0 if emotion not found
 
