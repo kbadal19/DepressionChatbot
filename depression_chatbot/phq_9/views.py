@@ -45,12 +45,15 @@ class PHQResponseCreate(APIView):
             question_id = response_data.get('question_id')
             response_text = response_data.get('response_text')
             predicted_emotion = voting_classifier.predict([response_text])[0]
+            # print("predicted_emotion",predicted_emotion)
 
             # Calculate depressive index based on predicted emotion
             depressive_index = get_depressive_index(predicted_emotion)
+            # print("depressive_index",depressive_index)
 
             # Rate the emotion based on depressive index
             sentiment_score = rate_emotion(depressive_index)
+            # print("sentiment_score",sentiment_score)
 
             # Retrieve the question instance
             question = get_object_or_404(PHQ9Question, pk=question_id)
@@ -67,14 +70,15 @@ class PHQResponseCreate(APIView):
         return Response({"message": "Responses created successfully"}, status=status.HTTP_201_CREATED)
 
 def rate_emotion(depressive_index):
-    if depressive_index >= 0.4:
+    if depressive_index >= 0.3:
         return 3  # Severely depressed
-    elif 0.2 <= depressive_index < 0.4:
+    elif 0 <= depressive_index < 0.3:
         return 2  # Moderately depressed
-    elif 0.1 <= depressive_index < 0.2:
+    elif -0.3 <= depressive_index < 0:
         return 1  # Mildly depressed
     else:
         return 0  # Not depressed
+    
 
 def get_depressive_index(emotion):
     # Define depressive index for each emotion
@@ -226,7 +230,8 @@ class PHQScore(APIView):
 
 # import joblib
 # # import pdb; pdb.set_trace()
-# custom_text = "I find speaking slowly redundant...like who in the right mind would speak slowly just for people to recognise or pay attention to him"
+# custom_text = "I face trouble reading the newspaper and concentrating on things"
+# print("custom_text",custom_text)
 
 # voting_classifier = joblib.load(r'phq_9\voting_classifier_model.pkl')
 
